@@ -4,8 +4,8 @@ from flask_restful import Resource
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 import utils
-from api import helpers
 from db import db
+from api import helpers
 
 from api.user import permissions, models as user_models
 from api.book import models, schemas
@@ -37,9 +37,10 @@ class ListCreateBookView(Resource):
         if book_file:
             schema['book_document'] = utils.upload_file(
                 file=book_file,
-                allowed_extensions=['pdf', 'docx', 'doc'],
+                allowed_extensions=['pdf'],
                 upload_folder='books',
-                model_id=user_id
+                model_id=user_id,
+                save_extension='pdf'
             )
         
         if cover_image:
@@ -47,7 +48,8 @@ class ListCreateBookView(Resource):
                 file=cover_image,
                 allowed_extensions=['jpg', 'jpeg', 'png', 'jfif'],
                 upload_folder='covers',
-                model_id=user_id
+                model_id=user_id,
+                save_extension='jpg'
             )
         
         # Add the book to the database
@@ -87,7 +89,7 @@ class ApproveBookView(Resource):
         schema = schemas.admin_approve_book_schema.load(data)
         
         if not book:
-            return make_response({'error': 'Book bot found'}, 404)
+            return make_response({'error': 'Book not found'}, 404)
         
         if book.is_approved:
             return make_response({'error': 'Book is approved already'}, 400)
@@ -106,14 +108,15 @@ class RetrieveUpdateDeleteBookView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission()
+    # @helpers.check_model_existence(models.Book, 'book_id')
     @helpers.handle_exceptions
     def get(self, book_id: UUID):
         book = db.session.get(models.Book, ident=book_id)
         
         if not book:
-            return make_response({'error': 'Book bot found'}, 404)
+            return make_response({'error': 'Book not found'}, 404)
         
-        # book = helpers.run_not_found_check(models.Book, book_id)
+        # book = getattr(request, 'Book')  # getattr(request, model_name)
         
         return make_response(schemas.book_schema.dump(book), 200)
     
@@ -127,7 +130,7 @@ class RetrieveUpdateDeleteBookView(Resource):
         book = book_query.first()
         
         if not book:
-            return make_response({'error': 'Book bot found'}, 404)
+            return make_response({'error': 'Book not found'}, 404)
         
         schema = schemas.admin_update_book_schema.load(data)
         
@@ -143,7 +146,7 @@ class RetrieveUpdateDeleteBookView(Resource):
         book = db.session.get(models.Book, ident=book_id)
         
         if not book:
-            return make_response({'error': 'Book bot found'}, 404)
+            return make_response({'error': 'Book not found'}, 404)
         
         db.session.delete(book)
         db.session.commit
@@ -167,14 +170,15 @@ class UpdateBookDocumentsView(Resource):
         book = db.session.get(models.Book, ident=book_id)
         
         if not book:
-            return make_response({'error': 'Book bot found'}, 404)
+            return make_response({'error': 'Book not found'}, 404)
 
         if book_file:
             book.book_document = utils.upload_file(
                 file=book_file,
-                allowed_extensions=['pdf', 'docx', 'doc'],
+                allowed_extensions=['pdf'],
                 upload_folder='books',
-                model_id=user_id
+                model_id=user_id,
+                save_extension='pdf'
             )
             db.session.commit()
         
@@ -183,10 +187,46 @@ class UpdateBookDocumentsView(Resource):
                 file=cover_image,
                 allowed_extensions=['jpg', 'jpeg', 'png', 'jfif'],
                 upload_folder='covers',
-                model_id=user_id
+                model_id=user_id,
+                save_extension='jpg'
             )
             db.session.commit()
             
         return make_response(schemas.book_schema.dump(book), 200)
+        
+
+# TODO: Fix bug with open ai quota finishing
+class GenerateBookSummaryView(Resource):
+    '''View to generate a book summary'''
+    
+    method_decorators = [jwt_required()]
+    
+    @permissions.check_role_permission()
+    @helpers.handle_exceptions
+    def post(self, book_id):
+        book = db.session.get(models.Book, ident=book_id)
+        
+        if not book:
+            return make_response({'error': 'Book not found'}, 404)
+        
+        if not book.is_approved:
+            return make_response({'error': 'Book is not approved'}, 400)
+            
+        # Download file for processing
+        file_content = utils.download_and_process_file_from_url(book.book_document)
+        
+        # Use openai api to generate the summary of the book
+        openai_response = helpers.generate_answer(
+            prompt=f'Generate a summary of this for me:\n\n{file_content}'
+        )
+        
+        return(
+            make_response({'error': 'An error occured while trying to get your response'}, 500) 
+            if openai_response is None 
+            else make_response({'message': openai_response}, 200)
+        )
+        
+        # return {'content': file_content}
+        
         
         
