@@ -14,7 +14,7 @@ def create_app():
     # Generat app configuraions
     app.secret_key = get_env_value('SECRET_KEY')
     app.config['JWT_SECRET_KEY'] = get_env_value('SECRET_KEY')
-    app.config['UPLOAD_FOLDER'] = '../uploads/'
+    app.config['UPLOAD_FOLDER'] = 'uploads/'
 
     # Set up database and migrations
     app.config['SQLALCHEMY_DATABASE_URI'] = get_env_value('DATABASE_URL')
@@ -24,14 +24,19 @@ def create_app():
     
     with app.app_context():    
         from api.user import models
-        db.create_all()
+        from api.book import models
+        
+        # db.create_all()
 
     # Initialize jwt mamager
     jwt_manager = JWTManager(app)
     
     # Initialize app routes
     from api.user.urls import user_blueprint
+    from api.book.urls import book_blueprint
+    
     app.register_blueprint(user_blueprint)
+    app.register_blueprint(book_blueprint)
     
     return app
 

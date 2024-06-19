@@ -5,7 +5,7 @@ from flask_jwt_extended import get_jwt_identity
 from db import db
 from api.user import models
 
-def check_permission(role: str | None = None):
+def check_role_permission(roles: list | None = None):
     def decorator_func(f):
         @wraps(f)
         def decorator(*args, **kwargs):
@@ -19,8 +19,8 @@ def check_permission(role: str | None = None):
                 # if not user.is_verified:
                 #     return make_response({'error': 'Account is not verified'}, 403)
                 
-                if role:
-                    if user.role != role:
+                if roles:
+                    if user.role not in roles:
                         return make_response({'error': 'Permission denied'}, 403)
                     
                 return f(*args, **kwargs)    

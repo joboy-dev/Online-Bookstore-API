@@ -26,13 +26,14 @@ class User(db.Model):
     first_name = sa.Column(sa.String(length=128), nullable=True)
     last_name = sa.Column(sa.String(length=128), nullable=True)
     profile_pic = sa.Column(sa.String, nullable=True)
+    bio = sa.Column(sa.String, nullable=True)
     role = sa.Column(sa.Enum(Role), nullable=False, server_default=Role.user.value)
     is_verified = sa.Column(sa.Boolean, nullable=False, server_default='False')
     is_active = sa.Column(sa.Boolean, nullable=False, server_default='True')
     created_at = sa.Column(sa.TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     last_login = sa.Column(sa.TIMESTAMP(timezone=True), nullable=True)
     
-    books = relationship('Book', back_populates='author')
+    books = relationship('Book', back_populates='uploaded_by')
     
     def __repr__(self) -> str:
         return f"<User: {self.email}>"

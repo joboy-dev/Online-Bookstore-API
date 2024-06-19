@@ -1,21 +1,20 @@
 from datetime import datetime, timedelta
-from flask import Blueprint, request, jsonify, make_response
-from flask.views import MethodView
+from flask import request, make_response
 from flask_restful import Resource
 from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from marshmallow import ValidationError
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 import utils
 from db import db
 from api.user import models, schemas, permissions
+from api import helpers
 
 bcrypt = Bcrypt()
 
-class RegisterView(MethodView):
+class RegisterView(Resource):
     '''View to register a user'''
     
-    @utils.handle_exceptions
+    @helpers.handle_exceptions
     def post(self):
         data = request.get_json()
     
@@ -45,7 +44,7 @@ class RegisterView(MethodView):
 class LoginView(Resource):
     '''View for a user to log in'''
     
-    @utils.handle_exceptions
+    @helpers.handle_exceptions
     def post(self):
         data = request.get_json()
         
@@ -75,7 +74,7 @@ class RetrieveUpdateDeleteDetailsView(Resource):
     
     method_decorators = [jwt_required()]    
     
-    @permissions.check_permission()
+    @permissions.check_role_permission()
     def get(self):
         user_id = get_jwt_identity()
         user = db.session.get(models.User, ident=user_id)
@@ -83,8 +82,8 @@ class RetrieveUpdateDeleteDetailsView(Resource):
         return make_response(schemas.user_schema.dump(user), 200)
     
     
-    @permissions.check_permission()
-    @utils.handle_exceptions
+    @permissions.check_role_permission()
+    @helpers.handle_exceptions
     def put(self):
         data = request.get_json()
         
@@ -98,7 +97,7 @@ class RetrieveUpdateDeleteDetailsView(Resource):
         return make_response(schemas.user_schema.dump(user_query.first()), 200)
     
     
-    @permissions.check_permission()
+    @permissions.check_role_permission()
     def delete(self):
         user_id = get_jwt_identity()
         user = db.session.get(models.User, ident=user_id)
@@ -109,6 +108,32 @@ class RetrieveUpdateDeleteDetailsView(Resource):
         return make_response({'message': 'Account deleted'}, 204)
     
 
+class UpdateProfilePictureView(Resource):
+    '''View to update user profile picture''' 
+    
+    method_decorators = [jwt_required()]
+    
+    @permissions.check_role_permission([])
+    @helpers.handle_exceptions
+    def put(self):
+        user_id = get_jwt_identity()
+        user = db.session.get(models.User, ident=user_id)
+        
+        profile_pic = request.files.get('profile_pic')
+
+        if profile_pic:
+            user.profile_pic = utils.upload_file(
+                file=profile_pic,
+                allowed_extensions=['jpg', 'png', 'jpeg', 'jfif'],
+                upload_folder='users',
+                model_id=user_id
+            )
+        
+            db.session.commit()
+            
+        return make_response(schemas.user_schema.dump(user), 200)
+        
+        
 # TODO: Implement change email
 
 

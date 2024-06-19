@@ -1,12 +1,23 @@
 import os
 import re
 from pathlib import Path
+from secrets import token_hex
+import uuid
 from dotenv import load_dotenv
+from functools import wraps
+
+import pyrebase
+from flask import make_response
+from werkzeug.utils import secure_filename
+from marshmallow.exceptions import ValidationError
+
+from firebase_config import firebase_config
+
+BASE_DIR = Path(__file__).resolve().parent
 
 def get_env_value(env_key: str):    
     '''Function to get the value of an environment variable'''
-    
-    BASE_DIR = Path(__file__).resolve().parent.parent
+        
     load_dotenv(os.path.join(BASE_DIR, ".env"))        
     return os.getenv(env_key)
 
@@ -30,17 +41,51 @@ def is_valid_password(password: str):
     return True if re.match(password_regex, password) else False
 
 
-from functools import wraps
-from flask import make_response
-from marshmallow.exceptions import ValidationError
-
-def handle_exceptions(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except ValidationError as e:
-            return make_response(e.messages, 422)
-        except Exception as e:
-            return make_response({'error': str(e)}, 400)
-    return decorated_function
+def upload_file(file, allowed_extensions: list | None, upload_folder: str, model_id: uuid.UUID):
+    '''Function to upload a file'''
+    
+    if not file:
+        return make_response({'error': 'No file selected'}, 400)
+    
+    # Check against invalid extensions
+    file_name = file.filename.lower()
+    
+    file_extension = file_name.split('.')[-1]
+    name = file_name.split('.')[0]
+    
+    if allowed_extensions:
+        if file_extension not in allowed_extensions:
+            return make_response({'error': 'Invalid file format'}, 400)
+            
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.system(f'mkdir uploads')
+    
+    # Create file storage path
+    UPLOAD_DIR = os.path.join(BASE_DIR, 'uploads', upload_folder, f'{model_id}')
+    if not os.path.exists(UPLOAD_DIR):
+        os.system(f'mkdir uploads\{upload_folder}\{model_id}')
+    
+    # Generate a new file name
+    new_filename = f'{name}-{token_hex(8)}.{file_extension}'
+    SAVE_FILE_DIR = os.path.join(UPLOAD_DIR, new_filename)
+    
+    # Save file in local PC
+    file.save(SAVE_FILE_DIR)
+    print(SAVE_FILE_DIR)
+    
+    # Initailize firebase
+    firebase = pyrebase.initialize_app(firebase_config)
+    
+    # Set up storage and a storage path for each file
+    storage = firebase.storage()
+    firebase_storage_path = f'bookstore_api/{upload_folder}/{model_id}/{new_filename}'
+    
+    # Store the file in the firebase storage path
+    storage.child(firebase_storage_path).put(SAVE_FILE_DIR)
+    
+    # Get download URL
+    download_url = storage.child(firebase_storage_path).get_url(None)
+    
+    return download_url 
+    

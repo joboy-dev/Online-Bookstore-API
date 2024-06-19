@@ -26,24 +26,28 @@ class Genre(str, Enum):
     drama = "Drama"
     comedy = "Comedy"
     adventure = "Adventure"
+    
 
 class Book(db.Model):
+    '''Books table model'''
+    
     __tablename__ = 'books'
     
     id = sa.Column(sa.UUID(as_uuid=True), primary_key=True, default=uuid4, index=True)
     title = sa.Column(sa.String(length=256), nullable=False)
+    author_name = sa.Column(sa.String, nullable=False)
     isbn = sa.Column(sa.String(length=13), unique=True, nullable=False)
     book_document = sa.Column(sa.String(length=256), nullable=False)
     description = sa.Column(sa.Text, nullable=True)
     page_count = sa.Column(sa.Integer, nullable=True)
     genre = sa.Column(sa.Enum(Genre), nullable=True)
     cover_image = sa.Column(sa.String, nullable=True)
-    price = sa.Column(sa.Float, nullable=False)
-    stock_quantity = sa.Column(sa.Integer, nullable=False, default=0)
+    price = sa.Column(sa.Float, nullable=False, server_default='0.00')
+    stock_quantity = sa.Column(sa.Integer, nullable=False, server_default='0')
     is_approved = sa.Column(sa.Boolean, server_default='False')
     created_at = sa.Column(sa.TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
     updated_at = sa.Column(sa.TIMESTAMP(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
     
-    author_id = sa.Column(sa.UUID(as_uuid=True), sa.ForeignKey('users.id'), nullable=False)
-    author = relationship('User', back_populates='books')
+    user_id = sa.Column(sa.UUID(as_uuid=True), sa.ForeignKey('users.id'), nullable=False)
+    uploaded_by = relationship('User', back_populates='books')
     
