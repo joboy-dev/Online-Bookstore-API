@@ -21,13 +21,11 @@ def create_app():
     
     db.init_app(app)
     migrate.init_app(app, db)
-    
-    # with app.app_context():    
-        # from api.user import models
-        # from api.book import models
-        
-        # db.create_all()
 
+    with app.app_context():
+        from api.user import models
+        from api.book import models
+        
     # Initialize jwt mamager
     jwt_manager = JWTManager(app)
     

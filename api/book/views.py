@@ -9,6 +9,7 @@ from api import helpers
 
 from api.user import permissions, models as user_models
 from api.book import models, schemas
+from api.inventory import models as inventory_models
 
 class ListCreateBookView(Resource):
     '''View to add a new book'''
@@ -16,6 +17,7 @@ class ListCreateBookView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission(['admin'])
+    @helpers.handle_exceptions
     def get(self):
         books = db.session.query(models.Book).all()
         return make_response(schemas.books_schema.dump(books), 200)
@@ -91,13 +93,23 @@ class ApproveBookView(Resource):
         if not book:
             return make_response({'error': 'Book not found'}, 404)
         
-        if book.is_approved:
-            return make_response({'error': 'Book is approved already'}, 400)
+        # if book.is_approved:
+        #     return make_response({'error': 'Book is approved already'}, 400)
         
+        # Update book approval status and price
         book.is_approved = True
         book.price = schema['price']
-        book.stock_quantity = schema['stock_quantity']
         db.session.commit()
+        
+        # Add book to inventory
+        inventory = inventory_models.Inventory(
+            stock_quantity=schema['stock_quantity'],
+            book_id=book.id
+        )
+        
+        db.session.add(inventory)
+        db.session.commit()
+        db.session.refresh(inventory)
             
         return make_response({'message': 'Book approvd'}, 200)
     

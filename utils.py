@@ -134,7 +134,7 @@ def download_and_process_file_from_url(url):
         with open(file_path, 'wb') as f:
             f.write(content.getbuffer())
             
-            # Process file
+        # Process file
         file_content = get_pdf_content(file_path)
         
         return file_content  

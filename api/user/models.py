@@ -34,6 +34,7 @@ class User(db.Model):
     last_login = sa.Column(sa.TIMESTAMP(timezone=True), nullable=True)
     
     books = relationship('Book', back_populates='uploaded_by')
+    orders = relationship('Order', back_populates='user')
     
     def __repr__(self) -> str:
         return f"<User: {self.email}>"
