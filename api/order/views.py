@@ -62,6 +62,19 @@ class ListCreateOrderView(Resource):
         app.connection.close()
         
         return make_response(schemas.order_schema.dump(order), 201)
+    
+
+class GetUserOrders(Resource):
+    '''View to get orders of logged in user'''
+    
+    method_decorators = [jwt_required()]
+    
+    @permissions.check_role_permission(['user'])
+    @utils.handle_exceptions
+    def get(self):
+        user_id = get_jwt_identity()
+        orders = db.session.query(models.Order).filter(models.Order.user_id == user_id).all()
+        return make_response(schemas.orders_schema.dump(orders), 200)
         
  
 class RetrieveUpdateOrderStatusView(Resource):
