@@ -1,10 +1,10 @@
 from flask import Flask
+from flask_socketio import SocketIO
 import pika
 import pika.exceptions
 
-from api import utils
-
 app = Flask(__name__)
+socketio = SocketIO(app)
 
 try:
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))

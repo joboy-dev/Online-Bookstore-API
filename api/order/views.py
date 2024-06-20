@@ -1,12 +1,14 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
+
 from flask import request, make_response
 from flask_restful import Resource
+from flask_socketio import SocketIO, emit
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from db import db
 from api.user import permissions
-from api.order import models, schemas, app
+from api.order import models, schemas, app, notification
 from api.book import models as book_models
 from api import utils
 
@@ -61,5 +63,52 @@ class ListCreateOrderView(Resource):
         
         return make_response(schemas.order_schema.dump(order), 201)
         
+ 
+class RetrieveUpdateOrderStatusView(Resource):
+    '''View to update status of an order'''
+    
+    method_decorators = [jwt_required()]
+    
+    @permissions.check_role_permission(['user', 'admin'])
+    @utils.handle_exceptions
+    def get(self, order_id):
+        # Check if order is in database
+        order = db.session.query(models.Order).filter(models.Order.id == order_id).first()
+        if not order:
+            return make_response({'error': 'Order not found'}, 404)
         
+        make_response(schemas.order_schema.dump(order), 200)
+        
+    
+    @permissions.check_role_permission(['user', 'admin'])
+    @utils.handle_exceptions
+    def put(self, order_id):
+        user_id = get_jwt_identity()
+        data = request.get_json()
+        
+        # Check if order is in database
+        order = db.session.query(models.Order).filter(models.Order.id == order_id).first()
+        if not order:
+            return make_response({'error': 'Order not found'}, 404)
+        
+        schema = schemas.place_order_schema.load(data)
+        
+        # Verify that the order status is valid
+        if schema['status'] not in models.Status.__members__:
+            return make_response({'error': f'{schema["status"]} is not a valid order status'}, 400)
+        
+        # Save order status to database
+        order.status = schema['status']
+        db.session.commit()
+        
+        # Notify client about status change
+        notification.send_order_notification(
+            order_id=order.id,
+            user_id=user_id,
+            status=order.status,
+            datetime_sent=datetime.now()
+        )
+        
+        return make_response({'message': 'Order status updated'}, 200)
+               
     
