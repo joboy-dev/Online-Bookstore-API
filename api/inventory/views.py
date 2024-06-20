@@ -3,7 +3,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required
 
 from db import db
-from api import helpers
+from api import utils
 
 from api.user import permissions
 from api.inventory import models, schemas
@@ -14,7 +14,7 @@ class RetrieveAllInventoryItemsView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission(['admin'])
-    @helpers.handle_exceptions
+    @utils.handle_exceptions
     def get(self):
         inventories = db.session.query(models.Inventory).all()
         return make_response(schemas.inventories_schema.dump(inventories), 200)
@@ -26,7 +26,7 @@ class RetrieveUpdateInventoryItemView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission(['admin'])
-    @helpers.handle_exceptions
+    @utils.handle_exceptions
     def get(self, item_id):
         inventory = db.session.get(models.Inventory, ident=item_id)
         
@@ -37,7 +37,7 @@ class RetrieveUpdateInventoryItemView(Resource):
     
     
     @permissions.check_role_permission(['admin'])
-    @helpers.handle_exceptions
+    @utils.handle_exceptions
     def put(self, item_id):
         data = request.get_data()
         

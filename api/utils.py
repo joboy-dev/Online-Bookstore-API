@@ -1,27 +1,30 @@
-from io import BytesIO
-import os
-import re
-from pathlib import Path
-from secrets import token_hex
-import uuid
-import PyPDF2
-from dotenv import load_dotenv
 from functools import wraps
+from uuid import UUID
+import requests, os, re
+from io import BytesIO
+from secrets import token_hex
+from io import BytesIO
+from pathlib import Path
 
-import pyrebase
-from flask import make_response
+import PyPDF2
 import requests
-from werkzeug.utils import secure_filename
-from marshmallow.exceptions import ValidationError
+from flask import make_response, request
+from sqlalchemy.orm.exc import NoResultFound
+from marshmallow import ValidationError
+from openai import OpenAI
+from dotenv import load_dotenv
 from firebase_admin import storage as admin_storage, initialize_app, credentials
 
+from db import db
 from firebase_config import firebase_config
 
-BASE_DIR = Path(__file__).resolve().parent
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Initialize Firebase Admin SDK
 cred = credentials.Certificate("serviceAccount.json")
 initialize_app(cred, firebase_config)
+
 
 def get_env_value(env_key: str):    
     '''Function to get the value of an environment variable'''
@@ -49,7 +52,7 @@ def is_valid_password(password: str):
     return True if re.match(password_regex, password) else False
 
 
-def upload_file(file, allowed_extensions: list | None, save_extension: str, upload_folder: str, model_id: uuid.UUID):
+def upload_file(file, allowed_extensions: list | None, save_extension: str, upload_folder: str, model_id: UUID):
     '''Function to upload a file'''
     
     if not file:
@@ -141,4 +144,53 @@ def download_and_process_file_from_url(url):
     else:
         raise Exception(f'Failed to download file: {req.status_code}')
     
+
+def handle_exceptions(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except ValidationError as e:
+            return make_response(e.messages, 400)
+        except Exception as e:
+            return make_response({'error': str(e)}, 500)
+    return decorated_function
+
+
+def check_model_existence(model, key_arg):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            key_value = kwargs.get(key_arg)
+            if not key_value:
+                return make_response({'error': f'Missing {key_arg} in request'}, 400)
+            
+            try:
+                instance = db.session.query(model).filter_by(id=key_value).one()
+                # Attach the instance to the request context for easy access in the view
+                setattr(request, f"{model.__name__}", instance)
+            except NoResultFound:
+                return make_response({'error': f'{model.__name__} not found'}, 404)
+            
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+
+def generate_answer(prompt: str):
+    '''Function to get answers to a prompt from openai API'''
     
+    openai = OpenAI(api_key=get_env_value('OPENAI_API_KEY'))
+    response = openai.chat.completions.create(
+        model='gpt-3.5-turbo',
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {
+                "role": "user",
+                "content": prompt
+            },
+        ]
+    )
+    
+    content = response.choices[0].message.content
+    return content

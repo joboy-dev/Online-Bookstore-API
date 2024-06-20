@@ -2,7 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
-from utils import get_env_value
+from api.utils import get_env_value
 from db import db, migrate
 
 def create_app():
@@ -25,6 +25,8 @@ def create_app():
     with app.app_context():
         from api.user import models
         from api.book import models
+        from api.inventory import models
+        from api.order import models
         
     # Initialize jwt mamager
     jwt_manager = JWTManager(app)
@@ -32,9 +34,13 @@ def create_app():
     # Initialize app routes
     from api.user.urls import user_blueprint
     from api.book.urls import book_blueprint
+    from api.inventory.urls import inventory_blueprint
+    from api.order.urls import order_blueprint
     
     app.register_blueprint(user_blueprint)
     app.register_blueprint(book_blueprint)
+    app.register_blueprint(inventory_blueprint)
+    app.register_blueprint(order_blueprint)
     
     return app
 

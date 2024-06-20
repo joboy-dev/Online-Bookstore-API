@@ -3,9 +3,8 @@ from flask import request, make_response
 from flask_restful import Resource
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
-import utils
 from db import db
-from api import helpers
+from api import utils
 
 from api.user import permissions, models as user_models
 from api.book import models, schemas
@@ -17,14 +16,14 @@ class ListCreateBookView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission(['admin'])
-    @helpers.handle_exceptions
+    @utils.handle_exceptions
     def get(self):
         books = db.session.query(models.Book).all()
         return make_response(schemas.books_schema.dump(books), 200)
     
     
     @permissions.check_role_permission(['admin', 'author'])
-    @helpers.handle_exceptions
+    @utils.handle_exceptions
     def post(self):
         user_id = get_jwt_identity()
         user = db.session.get(user_models.User, ident=user_id)
@@ -83,7 +82,7 @@ class ApproveBookView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission(['admin'])
-    @helpers.handle_exceptions
+    @utils.handle_exceptions
     def post(self, book_id: UUID):
         book = db.session.get(models.Book, ident=book_id)
         data = request.get_json()
@@ -121,7 +120,7 @@ class RetrieveUpdateDeleteBookView(Resource):
     
     @permissions.check_role_permission()
     # @helpers.check_model_existence(models.Book, 'book_id')
-    @helpers.handle_exceptions
+    @utils.handle_exceptions
     def get(self, book_id: UUID):
         book = db.session.get(models.Book, ident=book_id)
         
@@ -134,7 +133,7 @@ class RetrieveUpdateDeleteBookView(Resource):
     
     
     @permissions.check_role_permission(['admin'])
-    @helpers.handle_exceptions
+    @utils.handle_exceptions
     def put(self, book_id: UUID):
         data = request.get_json()
         
@@ -153,7 +152,7 @@ class RetrieveUpdateDeleteBookView(Resource):
         
         
     @permissions.check_role_permission(['admin'])
-    @helpers.handle_exceptions
+    @utils.handle_exceptions
     def delete(self, book_id: UUID):
         book = db.session.get(models.Book, ident=book_id)
         
@@ -172,7 +171,7 @@ class UpdateBookDocumentsView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission(['admin', 'author'])
-    @helpers.handle_exceptions
+    @utils.handle_exceptions
     def put(self, book_id):
         user_id = get_jwt_identity()
         
@@ -214,7 +213,7 @@ class GenerateBookSummaryView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission()
-    @helpers.handle_exceptions
+    @utils.handle_exceptions
     def post(self, book_id):
         book = db.session.get(models.Book, ident=book_id)
         
@@ -228,7 +227,7 @@ class GenerateBookSummaryView(Resource):
         file_content = utils.download_and_process_file_from_url(book.book_document)
         
         # Use openai api to generate the summary of the book
-        openai_response = helpers.generate_answer(
+        openai_response = utils.generate_answer(
             prompt=f'Generate a summary of this for me:\n\n{file_content}'
         )
         

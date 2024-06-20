@@ -4,17 +4,16 @@ from flask_restful import Resource
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
-import utils
 from db import db
 from api.user import models, schemas, permissions
-from api import helpers
+from api import utils
 
 bcrypt = Bcrypt()
 
 class RegisterView(Resource):
     '''View to register a user'''
     
-    @helpers.handle_exceptions
+    @utils.handle_exceptions
     def post(self):
         data = request.get_json()
     
@@ -44,7 +43,7 @@ class RegisterView(Resource):
 class LoginView(Resource):
     '''View for a user to log in'''
     
-    @helpers.handle_exceptions
+    @utils.handle_exceptions
     def post(self):
         data = request.get_json()
         
@@ -83,7 +82,7 @@ class RetrieveUpdateDeleteDetailsView(Resource):
     
     
     @permissions.check_role_permission()
-    @helpers.handle_exceptions
+    @utils.handle_exceptions
     def put(self):
         data = request.get_json()
         
@@ -114,7 +113,7 @@ class UpdateProfilePictureView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission([])
-    @helpers.handle_exceptions
+    @utils.handle_exceptions
     def put(self):
         user_id = get_jwt_identity()
         user = db.session.get(models.User, ident=user_id)
