@@ -11,6 +11,8 @@ class Status(str, Enum):
     
     pending = 'pending'
     processing = 'processing'
+    shipped = 'shipped'
+    delivered = 'delivered'
     completed = 'completed'
     cancelled = 'cancelled'
     
@@ -21,8 +23,8 @@ class Order(db.Model):
     __tablename__ = 'orders'
     
     id = sa.Column(sa.UUID(as_uuid=True), primary_key=True, default=uuid4)
-    quantity = sa.Column(sa.Integer, nullable=False)
-    status = sa.Column(sa.Enum(Status))
+    quantity = sa.Column(sa.Integer, nullable=False, server_default='1')
+    status = sa.Column(sa.Enum(Status), nullable=False, server_default=Status.pending.value)
     created_at = sa.Column(sa.TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
     updated_at = sa.Column(sa.TIMESTAMP(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
     

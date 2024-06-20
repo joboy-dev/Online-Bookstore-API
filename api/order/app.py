@@ -1,10 +1,18 @@
 from flask import Flask
-
-from db import db, migrate
+import pika
+import pika.exceptions
 
 from api import utils
 
 app = Flask(__name__)
+
+try:
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+except pika.exceptions.AMQPConnectionError:
+    print('Failed to connect to RabbitMQ service. Message won\'t be sent')
+    
+channel = connection.channel()
+channel.queue_declare(queue='order_queue', durable=True)
 
 # Run application
 if __name__ == '__main__':
