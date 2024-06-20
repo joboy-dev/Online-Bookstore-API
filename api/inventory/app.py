@@ -1,25 +1,24 @@
 from flask import Flask
 import pika, json
-
 import pika.exceptions
-
-from db import db
-from api.inventory import models
 
 app = Flask(__name__)
 
 # RabbitMQ connection
 try:
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+    channel = connection.channel()
+    channel.queue_declare(queue='order_queue', durable=True)
 except pika.exceptions.AMQPConnectionError:
     print('Failed to connect to RabbitMQ service. Message won\'t be received')
     
-channel = connection.channel()
-channel.queue_declare(queue='order_queue', durable=True)
 
 # Set up callback function to perform an action with the rev=ceived data
 def callback(ch, method, properties, body):
     '''Callback method'''
+    
+    from db import db
+    from api.inventory import models
     
     order_message = json.loads(body)
     

@@ -8,11 +8,10 @@ socketio = SocketIO(app)
 
 try:
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+    channel = connection.channel()
+    channel.queue_declare(queue='order_queue', durable=True)
 except pika.exceptions.AMQPConnectionError:
     print('Failed to connect to RabbitMQ service. Message won\'t be sent')
-    
-channel = connection.channel()
-channel.queue_declare(queue='order_queue', durable=True)
 
 # Run application
 if __name__ == '__main__':
