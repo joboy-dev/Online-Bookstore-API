@@ -39,7 +39,7 @@ class RetrieveUpdateInventoryItemView(Resource):
     @permissions.check_role_permission(['admin'])
     @utils.handle_exceptions
     def put(self, item_id):
-        data = request.get_data()
+        data = request.get_json()
         
         inventory_query = db.session.query(models.Inventory).filter(models.Inventory.id == item_id)
         inventory = inventory_query.first()

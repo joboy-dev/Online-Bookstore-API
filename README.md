@@ -1,4 +1,4 @@
-# Order and Inventory Management Microservice Application
+# Bookstore Application
 
 ## Table of Contents
 
@@ -6,9 +6,9 @@
 - [Features](#features)
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
+- [Documantation](#documentation)
 - [Setup and Installation](#setup-and-installation)
 - [Running the Application](#running-the-application)
-- [API Endpoints](#api-endpoints)
 - [WebSocket Notifications](#websocket-notifications)
 
 ## Introduction
@@ -29,15 +29,14 @@ An asynchronous communication system for an online bookstore using Python, Flask
 
 ## Architecture
 
-The application is divided into several services:
+The application is divided into several parts:
 
 1. **User Service**: Handles user authentication and profile management.
 2. **Book Service**: Handles book upload, management, and summarization.
-3. **Order Service**: Manages order creation, updates, and notifications.
+3. **Order Service**: Manages order creation, updates, and notifications with websockets.
 4. **Inventory Service**: Keeps track of stock levels and updates inventory based on orders.
-5. **Notification Service**: Sends real-time notifications to users when order statuses change.
 
-Inter-service communication is facilitated using RabbitMQ.
+Inter-service communication between order and inventory is facilitated using RabbitMQ.
 
 ## Tech Stack
 
@@ -48,6 +47,10 @@ Inter-service communication is facilitated using RabbitMQ.
 - **Firebase**: Python wrapper for Firebase for file storage.
 - **PostgreSQL**: Database for local development.
 - **Docker**: Containerization of services.
+
+## Documentation
+
+Get the postman documentation for a detailed description on how to make use of the API. You can find it [here](https://documenter.getpostman.com/view/25448393/2sA3XVALMT)
 
 ## Setup and Installation
 
@@ -63,7 +66,7 @@ Inter-service communication is facilitated using RabbitMQ.
 1. **Clone the repository**:
 
     ```sh
-    git clone https://github.com/your-username/Online-Bookstore-API.git
+    git clone https://github.com/joboy-dev/Online-Bookstore-API.git
     cd Online-Bookstore-API
     ```
 
@@ -71,7 +74,7 @@ Inter-service communication is facilitated using RabbitMQ.
 
     ```sh
     python -m venv venv
-    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+    cd venv/Scripts/activate  # On mac, use `source venv/bin/activate`
     ```
 
 3. **Install dependencies**:
@@ -80,6 +83,12 @@ Inter-service communication is facilitated using RabbitMQ.
     pip install -r requirements.txt
     ```
 
+4. **Setup database**
+
+    Create a postgres database in PgAdmin4 ans set the `DATABASE_URL` in `.env` file to:
+    ```sh
+    DATABASE_URL = "postgresql+psycopg2://postgres:postgres@localhost:5432/database_name"
+    ```
 
 5. **Run database migrations**:
 
@@ -128,7 +137,7 @@ Real-time notifications are sent to clients when the order status changes. The W
     <ul id="notifications"></ul>
 
     <script>
-        const socket = io('http://localhost:5002');
+        const socket = io('http://localhost:5001');
 
         socket.on('connect', () => {
             console.log('Connected to WebSocket server');
@@ -137,6 +146,11 @@ Real-time notifications are sent to clients when the order status changes. The W
         socket.on('order_status_change', (data) => {
             const notificationList = document.getElementById('notifications');
             const notificationItem = document.createElement('li');
+            // You can filter the data coming in by checking if data.user_id is the same as the user_id stored in the localStorage or something.
+            // For example, you might store the user_id in localStorage after login
+            // const loggedInUserId = localStorage.getItem('user_id');
+            // if (data.user_id !== loggedInUserId) return;
+
             notificationItem.textContent = `Order ID: ${data.order_id}, Status: ${data.status}`;
             notificationList.appendChild(notificationItem);
         });
@@ -147,3 +161,4 @@ Real-time notifications are sent to clients when the order status changes. The W
     </script>
 </body>
 </html> 
+```

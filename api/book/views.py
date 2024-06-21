@@ -92,8 +92,8 @@ class ApproveBookView(Resource):
         if not book:
             return make_response({'error': 'Book not found'}, 404)
         
-        # if book.is_approved:
-        #     return make_response({'error': 'Book is approved already'}, 400)
+        if book.is_approved:
+            return make_response({'error': 'Book is approved already'}, 400)
         
         # Update book approval status and price
         book.is_approved = True

@@ -20,5 +20,5 @@ class OrderSchema(Schema):
 order_schema = OrderSchema(exclude=['user_id', 'book_id'])
 orders_schema = OrderSchema(many=True, exclude=['user_id', 'book_id'])
 
-place_order_schema = OrderSchema(only=['quantity', 'book_id'])
+place_order_schema = OrderSchema(only=['quantity'])
 update_status_schema = OrderSchema(only=['status'])

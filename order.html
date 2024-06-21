@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Notifications</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Order Notifications</h1>
+    <ul id="notifications"></ul>
+
+    <script>
+        const socket = io('http://localhost:5001');
+
+        socket.on('connect', () => {
+            console.log('Connected to WebSocket server');
+        });
+
+        socket.on('order_status_change', (data) => {
+            const notificationList = document.getElementById('notifications');
+            const notificationItem = document.createElement('li');
+            // You can filter the data coming in by checking if data.user_id is the same as the user_id stored in the localStorage or something.
+            // For example, you might store the user_id in localStorage after login
+            // const loggedInUserId = localStorage.getItem('user_id');
+            // if (data.user_id !== loggedInUserId) return;
+
+            notificationItem.textContent = `Order ID: ${data.order_id}, Status: ${data.status}`;
+            notificationList.appendChild(notificationItem);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from WebSocket server');
+        });
+    </script>
+</body>
+</html> 
