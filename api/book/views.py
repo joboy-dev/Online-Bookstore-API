@@ -18,7 +18,18 @@ class ListCreateBookView(Resource):
     @permissions.check_role_permission(['admin'])
     @decorators.handle_exceptions
     def get(self):
-        books = db.session.query(models.Book).all()
+        query = request.args.get('search', '')
+        
+        if query:
+            search = f"%{query}%"
+            books = db.session.query(models.Book).filter(
+                models.Book.title.ilike(search)
+            ).all()
+            
+            print(query)
+        else:
+            books = db.session.query(models.Book).all()
+            
         return make_response(schemas.books_schema.dump(books), 200)
     
     
@@ -72,7 +83,19 @@ class GetAllApprovedBooksView(Resource):
     
     @permissions.check_role_permission()
     def get(self):
-        books = db.session.query(models.Book).filter(models.Book.is_approved == True).all()
+        query = request.args.get('search', '')
+        
+        if query:
+            search = f"%{query}%"
+            books = db.session.query(models.Book).filter(
+                models.Book.is_approved == True,
+                models.Book.title.ilike(search)
+            ).all()
+            
+            print(query)
+        else:
+            books = db.session.query(models.Book).filter(models.Book.is_approved == True).all()
+            
         return make_response(schemas.books_schema.dump(books), 200)
     
 

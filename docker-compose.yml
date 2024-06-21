@@ -15,7 +15,7 @@ services:
     volumes:
       - ./base:/app
     ports:
-      - "5000:5000"
+      - "8000:8000"
     env_file:
       - .env
 
