@@ -11,7 +11,7 @@ COPY . /app/
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 # RUN flask db migrate -m "Make db migrations"
-# RUN flask db upgrade
+RUN flask db upgrade
 
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1

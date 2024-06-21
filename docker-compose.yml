@@ -12,17 +12,29 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    volumes:
+      - ./base:/app
     ports:
       - "5000:5000"
+    env_file:
+      - .env
 
   order_service:
     build:
       context: .
       dockerfile: api/order/Dockerfile
+    volumes:
+      - ./order:/app/api/order
     ports:
       - "5001:5001"
+    env_file:
+      - .env
 
   inventory_service:
     build:
       context: .
       dockerfile: api/inventory/Dockerfile
+    volumes:
+      - ./inventory:/app/api/inventory
+    env_file:
+      - .env
