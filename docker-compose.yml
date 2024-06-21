@@ -1,1 +1,28 @@
--
+version: '3.8'
+
+services: 
+
+  rabbitmq:
+    image: 'rabbitmq:3-management'
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+
+  base:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+
+  order_service:
+    build:
+      context: .
+      dockerfile: api/order/Dockerfile
+    ports:
+      - "5001:5001"
+
+  inventory_service:
+    build:
+      context: .
+      dockerfile: api/inventory/Dockerfile
