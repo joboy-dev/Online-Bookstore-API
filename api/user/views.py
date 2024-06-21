@@ -6,20 +6,20 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 
 from db import db
 from api.user import models, schemas, permissions
-from api import utils
+from utilities import files, validators, decorators
 
 bcrypt = Bcrypt()
 
 class RegisterView(Resource):
     '''View to register a user'''
     
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def post(self):
         data = request.get_json()
     
         schema = schemas.register_schema.load(data)
         
-        if not utils.is_valid_password(schema['password']):
+        if not validators.is_valid_password(schema['password']):
             return make_response({'error': 'Invalid password'}, 400)
         
         # Check if email already belongs to a user
@@ -43,7 +43,7 @@ class RegisterView(Resource):
 class LoginView(Resource):
     '''View for a user to log in'''
     
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def post(self):
         data = request.get_json()
         
@@ -82,7 +82,7 @@ class RetrieveUpdateDeleteDetailsView(Resource):
     
     
     @permissions.check_role_permission()
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def put(self):
         data = request.get_json()
         
@@ -113,7 +113,7 @@ class UpdateProfilePictureView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission([])
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def put(self):
         user_id = get_jwt_identity()
         user = db.session.get(models.User, ident=user_id)
@@ -121,7 +121,7 @@ class UpdateProfilePictureView(Resource):
         profile_pic = request.files.get('profile_pic')
 
         if profile_pic:
-            user.profile_pic = utils.upload_file(
+            user.profile_pic = files.upload_file(
                 file=profile_pic,
                 allowed_extensions=['jpg', 'png', 'jpeg', 'jfif'],
                 upload_folder='users',

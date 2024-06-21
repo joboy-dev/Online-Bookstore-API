@@ -1,6 +1,5 @@
-from functools import wraps
 from uuid import UUID
-import requests, os, re
+import requests, os
 from io import BytesIO
 from secrets import token_hex
 from io import BytesIO
@@ -8,16 +7,12 @@ from pathlib import Path
 
 import PyPDF2
 import requests
-from flask import make_response, request
-from sqlalchemy.orm.exc import NoResultFound
-from marshmallow import ValidationError
-from openai import OpenAI
+from flask import make_response
 from dotenv import load_dotenv
 from firebase_admin import storage as admin_storage, initialize_app, credentials
 
 from db import db
 from firebase_config import firebase_config
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -31,25 +26,6 @@ def get_env_value(env_key: str):
         
     load_dotenv(os.path.join(BASE_DIR, ".env"))        
     return os.getenv(env_key)
-
-
-def is_valid_email(email: str):
-    '''Function to check if email is valid'''
-    
-    # Regular expression for a valid email address
-    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    
-    return True if re.match(email_regex, email) else False
-    
-
-def is_valid_password(password: str):
-    '''Function to check if password is valid'''
-    
-    # Regular expression for a valid password
-    # Password must contain at least 8 characters, including one uppercase letter, one lowercase letter, one digit, and one special character.
-    password_regex = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
-    
-    return True if re.match(password_regex, password) else False
 
 
 def upload_file(file, allowed_extensions: list | None, save_extension: str, upload_folder: str, model_id: UUID):
@@ -144,53 +120,3 @@ def download_and_process_file_from_url(url):
     else:
         raise Exception(f'Failed to download file: {req.status_code}')
     
-
-def handle_exceptions(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except ValidationError as e:
-            return make_response(e.messages, 400)
-        except Exception as e:
-            return make_response({'error': str(e)}, 500)
-    return decorated_function
-
-
-def check_model_existence(model, key_arg):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            key_value = kwargs.get(key_arg)
-            if not key_value:
-                return make_response({'error': f'Missing {key_arg} in request'}, 400)
-            
-            try:
-                instance = db.session.query(model).filter_by(id=key_value).one()
-                # Attach the instance to the request context for easy access in the view
-                setattr(request, f"{model.__name__}", instance)
-            except NoResultFound:
-                return make_response({'error': f'{model.__name__} not found'}, 404)
-            
-            return f(*args, **kwargs)
-        return decorated_function
-    return decorator
-
-
-def generate_answer(prompt: str):
-    '''Function to get answers to a prompt from openai API'''
-    
-    openai = OpenAI(api_key=get_env_value('OPENAI_API_KEY'))
-    response = openai.chat.completions.create(
-        model='gpt-3.5-turbo-16k',
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {
-                "role": "user",
-                "content": prompt
-            },
-        ]
-    )
-    
-    content = response.choices[0].message.content
-    return content

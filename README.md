@@ -162,3 +162,16 @@ Real-time notifications are sent to clients when the order status changes. The W
 </body>
 </html> 
 ```
+
+## Design Decisions
+
+1. **Microservice Architecture**: The application is divided into multiple services to ensure modularity, scalability, and ease of maintenance.
+2. **Asynchronous Communication**: RabbitMQ is used to facilitate communication between services, ensuring that they are loosely coupled and can scale independently.
+3. **Real-time Notifications**: WebSocket is used to push real-time updates to the clients, providing instant feedback on order status changes.
+4. **AI Integration**: OpenAI API is used to generate summaries for books, enhancing the user experience with intelligent features.
+5. **Dockerization**: The application is containerized using Docker, allowing for consistent development and deployment environments.
+6. **Security**: User authentication and role-based access control ensure that resources are protected and only accessible to authorized users.
+
+
+## AI Algorithms Used
+1. **OpenAI GPT-3.5**: Used for generating book summaries. This model is called via the OpenAI API, which enhances the application's functionality by providing intelligent text generation capabilities.

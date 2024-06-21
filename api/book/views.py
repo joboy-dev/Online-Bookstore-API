@@ -1,10 +1,10 @@
 from uuid import UUID
 from flask import request, make_response
 from flask_restful import Resource
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from db import db
-from api import utils
+from utilities import files, openai, decorators
 
 from api.user import permissions, models as user_models
 from api.book import models, schemas
@@ -16,14 +16,14 @@ class ListCreateBookView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission(['admin'])
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def get(self):
         books = db.session.query(models.Book).all()
         return make_response(schemas.books_schema.dump(books), 200)
     
     
     @permissions.check_role_permission(['admin', 'author'])
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def post(self):
         user_id = get_jwt_identity()
         user = db.session.get(user_models.User, ident=user_id)
@@ -36,7 +36,7 @@ class ListCreateBookView(Resource):
         schema = schemas.author_add_book_schema.load(data)
         
         if book_file:
-            schema['book_document'] = utils.upload_file(
+            schema['book_document'] = files.upload_file(
                 file=book_file,
                 allowed_extensions=['pdf'],
                 upload_folder='books',
@@ -45,7 +45,7 @@ class ListCreateBookView(Resource):
             )
         
         if cover_image:
-            schema['cover_image'] = utils.upload_file(
+            schema['cover_image'] = files.upload_file(
                 file=cover_image,
                 allowed_extensions=['jpg', 'jpeg', 'png', 'jfif'],
                 upload_folder='covers',
@@ -82,7 +82,7 @@ class ApproveBookView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission(['admin'])
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def post(self, book_id: UUID):
         book = db.session.get(models.Book, ident=book_id)
         data = request.get_json()
@@ -120,7 +120,7 @@ class RetrieveUpdateDeleteBookView(Resource):
     
     @permissions.check_role_permission()
     # @helpers.check_model_existence(models.Book, 'book_id')
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def get(self, book_id: UUID):
         book = db.session.get(models.Book, ident=book_id)
         
@@ -133,7 +133,7 @@ class RetrieveUpdateDeleteBookView(Resource):
     
     
     @permissions.check_role_permission(['admin'])
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def put(self, book_id: UUID):
         data = request.get_json()
         
@@ -152,7 +152,7 @@ class RetrieveUpdateDeleteBookView(Resource):
         
         
     @permissions.check_role_permission(['admin'])
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def delete(self, book_id: UUID):
         book = db.session.get(models.Book, ident=book_id)
         
@@ -171,7 +171,7 @@ class UpdateBookDocumentsView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission(['admin', 'author'])
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def put(self, book_id):
         user_id = get_jwt_identity()
         
@@ -184,7 +184,7 @@ class UpdateBookDocumentsView(Resource):
             return make_response({'error': 'Book not found'}, 404)
 
         if book_file:
-            book.book_document = utils.upload_file(
+            book.book_document = files.upload_file(
                 file=book_file,
                 allowed_extensions=['pdf'],
                 upload_folder='books',
@@ -194,7 +194,7 @@ class UpdateBookDocumentsView(Resource):
             db.session.commit()
         
         if cover_image:
-            book.cover_image = utils.upload_file(
+            book.cover_image = files.upload_file(
                 file=cover_image,
                 allowed_extensions=['jpg', 'jpeg', 'png', 'jfif'],
                 upload_folder='covers',
@@ -213,7 +213,7 @@ class GenerateBookSummaryView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission()
-    @utils.handle_exceptions
+    # @decorators.handle_exceptions
     def post(self, book_id):
         book = db.session.get(models.Book, ident=book_id)
         
@@ -224,20 +224,16 @@ class GenerateBookSummaryView(Resource):
             return make_response({'error': 'Book is not approved'}, 400)
             
         # Download file for processing
-        file_content = utils.download_and_process_file_from_url(book.book_document)
+        file_content = files.download_and_process_file_from_url(book.book_document)
         
         # Use openai api to generate the summary of the book
-        openai_response = utils.generate_answer(
-            prompt=f'Generate a summary of this for me:\n\n{file_content}'
+        openai_response = openai.generate_answer(
+            prompt=f'Generate a short summary of this for me:\n\n{file_content}'
         )
         
         return(
             make_response({'error': 'An error occured while trying to get your response'}, 500) 
             if openai_response is None 
             else make_response({'message': openai_response}, 200)
-        )
-        
-        # return {'content': file_content}
-        
-        
+        )     
         

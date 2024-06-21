@@ -2,7 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
-from api.utils import get_env_value
+from utilities.files import get_env_value
 from db import db, migrate
 
 def create_app():

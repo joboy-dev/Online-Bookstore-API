@@ -10,7 +10,7 @@ from api.user import permissions
 from api.order import models, schemas, app, notification
 from api.book import models as book_models
 from api.inventory import models as inventory_models
-from api import utils
+from utilities import decorators
 
 class AllOrderView(Resource):
     '''View to get all orders and place an order'''
@@ -18,7 +18,7 @@ class AllOrderView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission(['admin'])
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def get(self):
         orders = db.session.query(models.Order).all()
         return make_response(schemas.orders_schema.dump(orders), 200)
@@ -30,7 +30,7 @@ class PlaceOrderView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission(['user'])
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def post(self, book_id):
         user_id = get_jwt_identity()
         
@@ -84,7 +84,7 @@ class GetUserOrders(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission(['user'])
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def get(self):
         user_id = get_jwt_identity()
         orders = db.session.query(models.Order).filter(models.Order.user_id == user_id).all()
@@ -97,7 +97,7 @@ class GetAuthorBookOrders(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission(['author'])
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def get(self):
         user_id = get_jwt_identity()
         
@@ -117,7 +117,7 @@ class GetOrderDetailsView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission(['user', 'admin'])
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def get(self, order_id):
         # Check if order is in database
         order = db.session.query(models.Order).filter(models.Order.id == order_id).first()
@@ -133,7 +133,7 @@ class UpdateOrderStatusView(Resource):
     method_decorators = [jwt_required()]
     
     @permissions.check_role_permission(['user', 'admin'])
-    @utils.handle_exceptions
+    @decorators.handle_exceptions
     def put(self, order_id):
         user_id = get_jwt_identity()
         data = request.get_json()
