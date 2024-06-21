@@ -9,7 +9,7 @@ RUN apt-get update
 COPY . /app/
 
 RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 # RUN flask db migrate -m "Make db migrations"
 RUN flask db upgrade
 
