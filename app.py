@@ -32,7 +32,6 @@ def create_app():
     app.register_blueprint(inventory_blueprint)
     app.register_blueprint(order_blueprint)
     
-    
     with app.app_context():
         from api.user import models
         from api.book import models
