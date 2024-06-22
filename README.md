@@ -50,6 +50,7 @@ Inter-service communication between order and inventory is facilitated using Rab
 - **Firebase**: Python wrapper for Firebase for file storage.
 - **PostgreSQL**: Database for local development.
 - **Docker**: Containerization of services.
+- **Logging**: Python's logging framework for handling error logs.
 
 ## Documentation
 
