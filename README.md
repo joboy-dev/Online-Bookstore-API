@@ -209,3 +209,8 @@ Real-time notifications are sent to clients when the order status changes. The W
 ## AI Algorithms Used
 
 1. **OpenAI GPT-3.5**: Used for generating book summaries. This model is called via the OpenAI API, which enhances the application's functionality by providing intelligent text generation capabilities.
+
+
+## Future implementations
+1. The search functionality has been implmented. So in the future, AI will be added for book recommendation to users based on their searches and purchases.
+2. Payment APIs like Paystack will be integrated for the seamless purchase of book items
