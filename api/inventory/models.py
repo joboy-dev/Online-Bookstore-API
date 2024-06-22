@@ -3,7 +3,7 @@ from uuid import uuid4
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 
-from db import db
+from api.extensions import db
 
 class Inventory(db.Model):
     '''Inventory table model'''

@@ -4,7 +4,7 @@ from flask_restful import Resource
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
-from db import db
+from api.extensions import db
 from api.user import models, schemas, permissions
 from utilities import files, validators, decorators
 

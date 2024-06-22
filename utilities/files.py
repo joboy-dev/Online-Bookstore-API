@@ -11,7 +11,7 @@ from flask import make_response
 from dotenv import load_dotenv
 from firebase_admin import storage as admin_storage, initialize_app, credentials
 
-from db import db
+from api.extensions import db
 from firebase_config import firebase_config
 
 BASE_DIR = Path(__file__).resolve().parent.parent

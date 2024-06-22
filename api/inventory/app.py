@@ -17,7 +17,7 @@ except pika.exceptions.AMQPConnectionError:
 def callback(ch, method, properties, body):
     '''Callback method'''
     
-    from db import db
+    from api.extensions import db
     from api.inventory import models
     
     order_message = json.loads(body)

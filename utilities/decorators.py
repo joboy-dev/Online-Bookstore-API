@@ -5,7 +5,7 @@ from marshmallow import ValidationError
 from sqlalchemy.orm.exc import NoResultFound
 
 from utilities.error_logger import logger
-from db import db
+from api.extensions  import db
 
 
 def handle_exceptions(f):
@@ -18,7 +18,7 @@ def handle_exceptions(f):
             return make_response(e.messages, 400)
         except Exception as exc:
             logger.exception(f'Exception error: {exc}')
-            return make_response({'error': str(e)}, 500)
+            return make_response({'error': str(exc)}, 500)
     return decorated_function
 
 

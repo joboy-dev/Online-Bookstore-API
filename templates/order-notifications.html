@@ -11,7 +11,7 @@
     <ul id="notifications"></ul>
 
     <script>
-        const socket = io('http://localhost:8001');
+        const socket = io('http://localhost:8000');
 
         socket.on('connect', () => {
             console.log('Connected to WebSocket server');
@@ -32,7 +32,7 @@
             // const loggedInUserId = localStorage.getItem('user_id');
             // if (data.user_id !== loggedInUserId) return;
 
-            notificationItem.textContent = `Order ID: ${data.order_id}, Status: ${data.status}`;
+            notificationItem.textContent = `Order ID: ${data.order_id}, Status: ${data.status} by ${data.datetime_sent}`;
             notificationList.appendChild(notificationItem);
         });
 

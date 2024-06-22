@@ -2,7 +2,7 @@ from functools import wraps
 from flask import make_response
 from flask_jwt_extended import get_jwt_identity
 
-from db import db
+from api.extensions import db
 from api.user import models
 
 def check_role_permission(roles: list | None = None):

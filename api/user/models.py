@@ -5,7 +5,7 @@ import sqlalchemy as sa
 from sqlalchemy.sql.expression import text
 from sqlalchemy.orm import relationship
 
-from db import db
+from api.extensions import db
 
 class Role(str, Enum):
     '''Role choices for user model'''

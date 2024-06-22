@@ -5,7 +5,7 @@ from flask import request, make_response
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from db import db
+from api.extensions  import db
 from api.user import permissions
 from api.order import models, schemas, app, notification
 from api.book import models as book_models
@@ -155,10 +155,10 @@ class UpdateOrderStatusView(Resource):
         
         # Notify client about status change
         notification.send_order_notification(
-            order_id=order.id,
-            user_id=user_id,
+            order_id=str(order.id),
+            user_id=str(user_id),
             status=order.status.value,
-            datetime_sent=datetime.now()
+            datetime_sent=datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
         )
         
         return make_response({'message': f'Order status updated to {order.status.value}'}, 200)

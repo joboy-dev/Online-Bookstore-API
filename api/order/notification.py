@@ -1,8 +1,6 @@
-from uuid import UUID
-
 from api.order import app
 
-def send_order_notification(order_id: UUID, user_id: UUID, status, datetime_sent):
+def send_order_notification(order_id: str, user_id: str, status, datetime_sent):
     '''Function to send order notification to a user'''
     
     data =  {

@@ -5,7 +5,7 @@ import sqlalchemy as sa
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship 
 
-from db import db
+from api.extensions import db
 
 class Genre(str, Enum):
     fiction = "Fiction"
