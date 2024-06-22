@@ -101,7 +101,37 @@ Get the postman documentation for a detailed description on how to make use of t
     flask db upgrade
     ```
 
-6. **Start RabbitMQ**:
+6. **Firebase connection**
+    - Go go firebase console [here](https://console.firebase.google.com/) and sign up if you do not have an account.
+    - Then, create a project.
+    - In Project overview, click on add app amd select `web` icon.
+    - Put in the app nickname and click on `Register app` and you'll be taken to the Project settings
+    - Go to `Service accounts` tab.
+    - Click on `Generate new private key` and a json file will download.
+    - Rename the downloaded file to `serviceAccount.json` and put the file in the root directory of this project.
+    - Create a file in the root directory of this project named `firebase_config.py`.
+    - On the firebase console, navigate to the `General` tab, scroll down and you'll see a `firebaseDonfig` variable. Copy and paste it in the file just created.
+    - Put it in this format:
+        ```python
+        firebase_config = {
+            'apiKey': "apiKey",
+            'authDomain': "authDomain",
+            'projectId': "projectId",
+            'storageBucket': "storageBucket",
+            'messagingSenderId': "messagingSenderId",
+            'appId': "appId",
+            'measurementId': "measurementId",
+            'serviceAccount': 'serviceAccount.json',
+            'databaseURL': 'databaseURL'
+        }
+        ```
+        All the values will be provided except for `serviceAccount` and `databaseURL`.
+        Service account will be the path to the `serviceAccount.json` file.
+    - To get the databaseURL, go to the sidebar in the firebase console for your project and click on `Build` and select `Realtime Database`.
+    - Create the database and the URL will be provided for you. Copy and paste the URL in `databaseURL`.
+
+
+7. **Start RabbitMQ**:
 
     ```sh
     docker run -d --hostname my-rabbit --name some-rabbit -p 5672:5672 -p 15672:15672 rabbitmq:3-management

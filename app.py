@@ -35,17 +35,16 @@ def create_app():
     from api.user.urls import user_blueprint
     from api.book.urls import book_blueprint
     from api.inventory.urls import inventory_blueprint
-    from api.order.urls import order_blueprint
+    # from api.order.urls import order_blueprint
     
     app.register_blueprint(user_blueprint)
     app.register_blueprint(book_blueprint)
     app.register_blueprint(inventory_blueprint)
-    app.register_blueprint(order_blueprint)
+    # app.register_blueprint(order_blueprint)
     
     return app
 
 app = create_app()
-
 
 # Run application
 if __name__ == '__main__':

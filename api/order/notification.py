@@ -11,7 +11,9 @@ def send_order_notification(order_id: UUID, user_id: UUID, status, datetime_sent
         'status': status,
         'datetime_sent': datetime_sent,
     }
-    app.socketio.emit('order_status_change', data)
+    
+    # Send data to client side
+    app.socketio.emit('order status change', data)
     
     print('Order notification sent')
     print(data)

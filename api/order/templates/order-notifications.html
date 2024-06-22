@@ -11,15 +11,22 @@
     <ul id="notifications"></ul>
 
     <script>
-        const socket = io('http://localhost:5001');
+        const socket = io('http://localhost:8001');
 
         socket.on('connect', () => {
             console.log('Connected to WebSocket server');
         });
+        
+        socket.emit('message', 'Hello from the frontend!');
 
-        socket.on('order_status_change', (data) => {
+        socket.on('response', (data) => {
+            console.log(data.data)
+        })
+
+        socket.on('order status change', (data) => {
             const notificationList = document.getElementById('notifications');
             const notificationItem = document.createElement('li');
+            
             // You can filter the data coming in by checking if data.user_id is the same as the user_id stored in the localStorage or something.
             // For example, you might store the user_id in localStorage after login
             // const loggedInUserId = localStorage.getItem('user_id');
