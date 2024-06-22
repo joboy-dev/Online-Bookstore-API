@@ -10,6 +10,8 @@
 - [Setup and Installation](#setup-and-installation)
 - [Running the Application](#running-the-application)
 - [WebSocket Notifications](#websocket-notifications)
+- [Design Decisions](#design-decisions)
+- [AI Algorithms Used](#ai-algorithms-used)
 
 ## Introduction
 
@@ -40,7 +42,8 @@ Inter-service communication between order and inventory is facilitated using Rab
 
 ## Tech Stack
 
-- **Flask**: Web framework for building the RESTful API.
+- **Flask**: Python web framework.
+- **Flask-restful**: For building the RESTful API.
 - **Flask-SocketIO**: For real-time WebSocket communications.
 - **SQLAlchemy**: ORM for database interactions.
 - **RabbitMQ**: Message broker for inter-service communication.
@@ -172,6 +175,6 @@ Real-time notifications are sent to clients when the order status changes. The W
 5. **Dockerization**: The application is containerized using Docker, allowing for consistent development and deployment environments.
 6. **Security**: User authentication and role-based access control ensure that resources are protected and only accessible to authorized users.
 
-
 ## AI Algorithms Used
+
 1. **OpenAI GPT-3.5**: Used for generating book summaries. This model is called via the OpenAI API, which enhances the application's functionality by providing intelligent text generation capabilities.
