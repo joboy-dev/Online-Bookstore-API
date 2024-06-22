@@ -20,6 +20,7 @@ def create_app():
     extensions.migrate.init_app(app, extensions.db)
     extensions.socketio.init_app(app)
     extensions.jwt_manager.init_app(app)
+    extensions.bcrypt.init_app(app)
 
     # Initialize app routes
     from api.user.urls import user_blueprint

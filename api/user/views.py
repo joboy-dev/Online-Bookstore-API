@@ -1,14 +1,11 @@
 from datetime import datetime, timedelta
 from flask import request, make_response
 from flask_restful import Resource
-from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
-from api.extensions import db
+from api.extensions import db, bcrypt
 from api.user import models, schemas, permissions
 from utilities import files, validators, decorators
-
-bcrypt = Bcrypt()
 
 class RegisterView(Resource):
     '''View to register a user'''
