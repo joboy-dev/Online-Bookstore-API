@@ -6,6 +6,7 @@ from sqlalchemy.sql.expression import text
 from sqlalchemy.orm import relationship
 
 from api.extensions import db
+from api.order.models import Order
 
 class Role(str, Enum):
     '''Role choices for user model'''
@@ -34,7 +35,7 @@ class User(db.Model):
     last_login = sa.Column(sa.TIMESTAMP(timezone=True), nullable=True)
     
     books = relationship('Book', back_populates='uploaded_by')
-    orders = relationship('Order', back_populates='user')
+    orders = relationship(Order, back_populates='user')
     
     def __repr__(self) -> str:
         return f"<User: {self.email}>"

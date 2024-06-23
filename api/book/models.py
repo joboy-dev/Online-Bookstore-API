@@ -6,6 +6,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship 
 
 from api.extensions import db
+from api.user.models import User
 
 class Genre(str, Enum):
     fiction = "Fiction"
@@ -48,7 +49,7 @@ class Book(db.Model):
     updated_at = sa.Column(sa.TIMESTAMP(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
     
     user_id = sa.Column(sa.UUID(as_uuid=True), sa.ForeignKey('users.id'), nullable=False)
-    uploaded_by = relationship('User', back_populates='books')
+    uploaded_by = relationship(User, back_populates='books')
     orders = relationship('Order', back_populates='book')
     inventory = relationship('Inventory', back_populates='book')
     

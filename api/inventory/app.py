@@ -1,8 +1,16 @@
+from uuid import UUID
 from flask import Flask
 import pika, json
 import pika.exceptions
 
+from api.extensions import db
+from utilities import files
+
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = files.get_env_value('DATABASE_URL')
+
+db.init_app(app)
+
 
 # RabbitMQ connection
 try:
@@ -19,26 +27,30 @@ def callback(ch, method, properties, body):
     '''Callback method'''
     
     order_message = json.loads(body)
-    print(f'Inventory- {order_message}')
+    print(f'(Inventory) Message received- {order_message}')
     
-    from api.extensions import db
-    from api.inventory import models
+    with app.app_context():
+        from api.inventory import models
     
-    book_id = order_message['book_id']
-    quantity = order_message['quantity']
+        print('set db and models')
+        
+        book_id = order_message['book_id']
+        quantity = order_message['quantity']
+        
+        # Convert the boo_id bacvk into a UUID value to avoid issues in the database
+        inventory_item = db.session.query(models.Inventory).filter(models.Inventory.book_id == UUID(book_id)).first()
+        
+        if not inventory_item:
+            print('Inventory item not found')
+        
+        inventory_item.stock_quantity -= quantity
+        db.session.commit()
     
-    inventory_item = db.session.query(models.Inventory).filter(book_id == book_id).first()
-    
-    if not inventory_item:
-        print('Inventory item not found')
-    
-    inventory_item.stock_quantity -= quantity
-    db.session.commit()
-    
-    print('Inventory updated successfully')
+        print('Inventory updated successfully')
     
 # Start data consumption process
 channel.basic_consume(queue='order_queue', on_message_callback=callback, auto_ack=True)
 
-print('Waiting for messages...')
-channel.start_consuming()
+if __name__ == "__main__":
+    print('Waiting for messages. To exit press CTRL+C')
+    channel.start_consuming()

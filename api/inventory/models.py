@@ -3,6 +3,7 @@ from uuid import uuid4
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 
+from api.book.models import Book
 from api.extensions import db
 
 class Inventory(db.Model):
@@ -14,6 +15,6 @@ class Inventory(db.Model):
     stock_quantity = sa.Column(sa.Integer, nullable=False)
     
     book_id = sa.Column(sa.UUID(as_uuid=True), sa.ForeignKey('books.id'), nullable=False)
-    book = relationship('Book', back_populates='inventory')
+    book = relationship(Book, back_populates='inventory')
     
     

@@ -65,7 +65,7 @@ class PlaceOrderView(Resource):
             'book_id': str(order.book_id),
             'quantity': order.quantity
         })
-        print(f'Order- {order_message}')
+        print(f'(Order) Message sent- {order_message}')
         
         app.channel.basic_publish(exchange='', routing_key='order_queue', body=order_message)
         # app.connection.close()
@@ -75,6 +75,7 @@ class PlaceOrderView(Resource):
         db.session.commit()
         db.session.refresh(order)
         
+        # return make_response({'m': 'order placed'}, 201)
         return make_response(schemas.order_schema.dump(order), 201)
         
 
