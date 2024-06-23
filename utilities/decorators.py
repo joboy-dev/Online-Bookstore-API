@@ -5,7 +5,7 @@ from marshmallow import ValidationError
 from sqlalchemy.orm.exc import NoResultFound
 
 from utilities.error_logger import logger
-from api.extensions  import db
+from api.extensions import db
 
 
 def handle_exceptions(f):

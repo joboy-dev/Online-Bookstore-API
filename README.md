@@ -134,7 +134,8 @@ Get the postman documentation for a detailed description on how to make use of t
 7. **Start RabbitMQ**:
 
     ```sh
-    docker run -d --hostname my-rabbit --name some-rabbit -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+    docker pull rabbitmq
+    docker run -d -p 5672:5672 -p 15672:15672 rabbitmq
     ```
 
 ## Running the Application

@@ -2,7 +2,7 @@ from flask import request, make_response
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required
 
-from api.extensions  import db
+from api.extensions import db
 from utilities import decorators
 
 from api.user import permissions

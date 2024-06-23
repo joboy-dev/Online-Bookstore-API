@@ -47,6 +47,12 @@ app = create_app()
 def index():
     return render_template('order-notifications.html')
 
+# Test socketio connection
+@extensions.socketio.on('message')
+def handle_message(message):
+    print('Received message:', message)
+    extensions.socketio.emit('response', {'data': 'Backend: Message received!'})
+
 
 # Run application
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-from api.order import app
+from api.extensions import socketio
 
 def send_order_notification(order_id: str, user_id: str, status, datetime_sent):
     '''Function to send order notification to a user'''
@@ -11,7 +11,7 @@ def send_order_notification(order_id: str, user_id: str, status, datetime_sent):
     }
     
     # Send data to client side
-    app.socketio.emit('order status change', data)
+    socketio.emit('order status change', data)
     
     print('Order notification sent')
     print(data)

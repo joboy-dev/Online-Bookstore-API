@@ -5,7 +5,7 @@ from flask import request, make_response
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from api.extensions  import db
+from api.extensions import db
 from api.user import permissions
 from api.order import models, schemas, app, notification
 from api.book import models as book_models
@@ -60,20 +60,20 @@ class PlaceOrderView(Resource):
             user_id=user_id
         )
         
-        db.session.add(order)
-        db.session.commit()
-        db.session.refresh(order)
-        
         # Send order message to inventory service
         order_message = json.dumps({
-            'order_id': str(order.id),
             'book_id': str(order.book_id),
             'quantity': order.quantity
         })
-        print(order_message)
+        print(f'Order- {order_message}')
         
         app.channel.basic_publish(exchange='', routing_key='order_queue', body=order_message)
-        app.connection.close()
+        # app.connection.close()
+        print('Message sent from order to inventory')
+        
+        db.session.add(order)
+        db.session.commit()
+        db.session.refresh(order)
         
         return make_response(schemas.order_schema.dump(order), 201)
         

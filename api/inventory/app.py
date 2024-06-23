@@ -9,6 +9,7 @@ try:
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
     channel = connection.channel()
     channel.queue_declare(queue='order_queue', durable=True)
+    print('Connection successful- Inventory service')
 except pika.exceptions.AMQPConnectionError:
     print('Failed to connect to RabbitMQ service. Message won\'t be received')
     
@@ -17,10 +18,11 @@ except pika.exceptions.AMQPConnectionError:
 def callback(ch, method, properties, body):
     '''Callback method'''
     
+    order_message = json.loads(body)
+    print(f'Inventory- {order_message}')
+    
     from api.extensions import db
     from api.inventory import models
-    
-    order_message = json.loads(body)
     
     book_id = order_message['book_id']
     quantity = order_message['quantity']
