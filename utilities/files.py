@@ -11,13 +11,12 @@ from flask import make_response
 from dotenv import load_dotenv
 from firebase_admin import storage as admin_storage, initialize_app, credentials
 
-from api.extensions import db
 from secret.firebase_config import firebase_config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Initialize Firebase Admin SDK
-cred = credentials.Certificate("serviceAccount.json")
+cred = credentials.Certificate("secret/serviceAccount.json")
 initialize_app(cred, firebase_config)
 
 
