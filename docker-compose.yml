@@ -12,12 +12,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      secrets:
+        - firebase_config
+        - service_account
     volumes:
       - ./base:/app
     ports:
       - "8000:8000"
     env_file:
       - .env
+    secrets:
+      - firebase_config
+      - service_account
 
   order_service:
     build:
@@ -38,3 +44,9 @@ services:
       - ./inventory:/app/api/inventory
     env_file:
       - .env
+
+secrets:
+  firebase_config:
+    file: ./secret/firebase_config.py 
+  service_account:
+    file: ./secret/serviceAccount.json

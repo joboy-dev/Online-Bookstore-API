@@ -81,10 +81,11 @@ Get the postman documentation for a detailed description on how to make use of t
     cd venv/Scripts/activate  # On mac, use `source venv/bin/activate`
     ```
 
-3. **Install dependencies**:
+3. **Install dependencies and set PYTHONPATH**:
 
     ```sh
     pip install -r requirements.txt
+    set PYTHONPATH=. # on mac do export PYTHONPATH=.
     ```
 
 4. **Setup database**

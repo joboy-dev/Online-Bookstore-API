@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from firebase_admin import storage as admin_storage, initialize_app, credentials
 
 from api.extensions import db
-from firebase_config import firebase_config
+from secret.firebase_config import firebase_config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 

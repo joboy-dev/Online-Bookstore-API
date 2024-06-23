@@ -5,8 +5,11 @@ WORKDIR /app/api/order
 # Install all dependencies 
 RUN apt-get update
 
-# Copy all needed files to docker image app/order folder
-COPY . /app/order/
+# Copy requirements file
+COPY ../../requirements.txt app/api/order/requirements.txt
+
+# Copy all needed files to docker image app/api/order folder
+COPY . /app/api/order/
 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt

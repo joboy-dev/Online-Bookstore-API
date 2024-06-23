@@ -1,9 +1,10 @@
 from flask import Flask, render_template
 
-from utilities.files import get_env_value
 from api import extensions
 
 def create_app():
+    from utilities.files import get_env_value
+    
     app = Flask(__name__)
 
     # Generat app configuraions

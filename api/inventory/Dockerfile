@@ -5,8 +5,11 @@ WORKDIR /app/api/inventory
 # Install all dependencies 
 RUN apt-get update
 
-# Copy all needed files to docker image app/inventory folder
-COPY . /app/inventory/
+# Copy requirements file
+COPY ../../requirements.txt app/api/inventory/requirements.txt
+
+# Copy all needed files to docker image app/api/inventory folder
+COPY . /app/api/inventory/
 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
